@@ -1,0 +1,18 @@
+{
+  "name": "dev-tinder",
+  "version": "1.0.0",
+  "description": "Create dev project",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "src/app.js",
+  "scripts": {
+  "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.9.5",
+    "nodemon": "^3.1.14"
+  }
+}
