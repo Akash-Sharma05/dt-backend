@@ -2,12 +2,17 @@ const express = require('express')
 const app = express();
 const dbConnect = require("./config/database")
 const User = require("./models/user");
+const validator = require('validator')
 
 app.use(express.json())
 
 app.post("/signup", async (req, res) => {
     try {
         const { firstName, lastName, emailId, password, gender } = req.body;
+        // const validEmail= validator.isEmail(emailId);
+        // if(!validEmail){
+        //     throw new Error("Email is not in proper format!!!");
+        // }
         const user = await User.create({
             firstName, lastName, emailId, password, gender
         })
@@ -24,7 +29,6 @@ app.post("/signup", async (req, res) => {
 app.get("/user", async (req, res) => {
     try {
         const ID = req.body._id;
-        console.log(ID)
 
         const user = await User.findById(ID)
         if (!user) {
@@ -86,11 +90,11 @@ app.patch("/user/:userId", async (req, res) => {
         if (!isUpadteAllowed) {
             throw new Error("Update not allowed ")
         }
-        if(data.skills.length>10){
-             throw new Error("Skills cannot be more than 10 ")
+        if (data.skills.length > 10) {
+            throw new Error("Skills cannot be more than 10 ")
         }
 
-        await User.findByIdAndUpdate(ID, data)
+        await User.findByIdAndUpdate(ID, data, { runValidators: true })
         return res.status(400).send("User updated successfully")
 
     } catch (err) {
