@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator')
+const bcrypt = require('bcrypt')
+const jwt= require('jsonwebtoken')
 
 const userSchema = mongoose.Schema({
     firstName: {
@@ -19,8 +21,8 @@ const userSchema = mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        validate(value){
-            if(!validator.isEmail(value)){
+        validate(value) {
+            if (!validator.isEmail(value)) {
                 throw new Error('Email is not valid!!! ' + value)
             }
         }
@@ -29,8 +31,8 @@ const userSchema = mongoose.Schema({
     password: {
         type: String,
         required: true,
-        validate(value){
-            if(!validator.isStrongPassword(value)){
+        validate(value) {
+            if (!validator.isStrongPassword(value)) {
                 throw new Error("Enter a strong password!!!" + value)
             }
         }
@@ -53,8 +55,8 @@ const userSchema = mongoose.Schema({
     photoUrl: {
         type: String,
         default: "https://w7.pngwing.com/pngs/910/606/png-transparent-head-the-dummy-avatar-man-tie-jacket-user-thumbnail.png",
-        validate(value){
-            if(!validator.isURL(value)){
+        validate(value) {
+            if (!validator.isURL(value)) {
                 throw new Error('Invalid Photo URL!!!' + value);
             }
         }
@@ -66,10 +68,23 @@ const userSchema = mongoose.Schema({
     skills: {
         type: [String]
     },
-   
-}, {
+
+}, { 
     timestamps: true
 });
+
+userSchema.methods.getJWT = async function () {
+    const user = this ;
+    const token = await jwt.sign({ _id: user._id }, "DEV@TINDER@4270", { expiresIn: "7d" })
+    return token
+}
+
+userSchema.methods.validatePassword= async function(passInputByUser){
+    const user = this ;
+    const passwordHash = user.password;
+    const isPasswordValid = await bcrypt.compare(passInputByUser, passwordHash);
+    return isPasswordValid
+}
 
 const User = mongoose.model("User", userSchema);
 module.exports = User
