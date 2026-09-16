@@ -34,6 +34,7 @@ authRouter.post("/login", async (req, res) => {
             throw new Error("Invalid Credientals!!!");
         }
         const isPasswordValid = bcrypt.compare(password, user.password);
+        
         if (isPasswordValid) {
             const token = jwt.sign({ _id: user._id }, 'DEV@TINDER@4270');
             res.cookie('token', token);
@@ -43,6 +44,18 @@ authRouter.post("/login", async (req, res) => {
         }
     } catch (err) {
         return res.status(400).send("ERROR : " + err.message);
+    }
+})
+
+authRouter.post("/logout",async(req,res)=>{
+    try{
+        res.cookie('token',null,{
+            expires:new Date(Date.now())
+        })
+        res.status(200).send("User Logout successfuly...")
+
+    }catch(err){ 
+        res.status(400).send("ERROR : " + err.message)
     }
 })
 

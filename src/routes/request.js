@@ -1,18 +1,58 @@
 const express = require('express');
 const { userAuth } = require('../middlewares/auth');
-const requestRouter= express.Router()
+const requestRouter = express.Router()
+const ConnectionRequest = require('../models/connectionRequest');
+const User = require('../models/user');
 
-requestRouter.post("/sendConnectionRequest",userAuth,async(req,res)=>{
-    try{
-        const user= req.user;
-        if(!user){
-            throw new Error("User not login!!!")
+requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
+    try {
+        const fromUserId = req.user._id;
+        const toUserId = req.params.toUserId;
+        const status = req.params.status;
+
+        const ALLOWED_STATUS = ["ignored", "interested"];
+
+        if (!ALLOWED_STATUS.includes(status)) {
+            return res.status(400).json({
+                message: "Invalid status type: " + status
+            })
         }
-        res.send(user.firstName + " sent the connection request") 
+        const existingRequest = await ConnectionRequest.findOne({
+            $or: [
+                { fromUserId, toUserId },
+                {
+                    fromUserId: toUserId,
+                    toUserId: fromUserId
+                }
+            ]
+        });
+        if (existingRequest) {
+            return res.status(400).send({
+                message: "Connection Request already exists!!!"
+            })
+        }
 
-    }catch(err){
+        if (existingRequest) {
+            return res.status(400).json({
+                message: "Request already sent!!!"
+            })
+        }
+
+        const connectionRequest = await new ConnectionRequest({
+            fromUserId, toUserId, status
+        })
+        const sender = await User.findOne({ _id: fromUserId });
+        const receiver = await User.findOne({ _id: toUserId });
+
+
+        const data = await connectionRequest.save();
+        res.status(200).send({
+            message: sender.firstName + " is "+ status + " in " + receiver.firstName
+        })
+
+    } catch (err) {
         return res.status(400).send("ERROR : " + err.message);
     }
 })
 
-module.exports= requestRouter;
+module.exports = requestRouter;
