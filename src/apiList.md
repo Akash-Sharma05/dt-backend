@@ -12,10 +12,8 @@
 
 ### ConnectionRequest Router
 - POST /request/send/status/:userId
-
-- POST /requst/review/accepted/:userId
-- POST /requst/review/rejected/ 
-
+- POST /requst/review/:status/:requestId 
+ 
 ### userRouter 
 - GET user/connections
 - GET user/requests/received
